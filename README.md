@@ -14,7 +14,7 @@ cp .env.example .env
 npm run dev
 ```
 
-The API runs on `http://localhost:5000`.
+The API runs on `http://localhost:5050`.
 
 ## Run the frontend
 
