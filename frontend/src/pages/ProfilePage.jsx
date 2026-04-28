@@ -4,10 +4,12 @@ import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useDialog } from "../context/DialogContext";
+import { useNotifications } from "../context/NotificationContext";
 
 export default function ProfilePage() {
   const { user, setUser, logout } = useAuth();
   const { showError } = useDialog();
+  const { notificationPermission, requestBrowserNotifications } = useNotifications();
   const navigate = useNavigate();
   const [form, setForm] = useState({
     username: user?.username || "",
@@ -43,6 +45,17 @@ export default function ProfilePage() {
   function onLogout() {
     logout();
     navigate("/login");
+  }
+
+  async function enableNotifications() {
+    try {
+      const result = await requestBrowserNotifications();
+      if (result !== "granted") {
+        showError("Browser notifications are not enabled. Please allow them in browser settings.");
+      }
+    } catch (_error) {
+      showError("Could not request browser notifications.");
+    }
   }
 
   return (
@@ -87,8 +100,12 @@ export default function ProfilePage() {
         />
         <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
         {message && <p className="success">{message}</p>}
+        <p className="muted">Browser notifications: {notificationPermission}</p>
         <div className="profile-action-row">
           <button type="submit">Update profile</button>
+          <button type="button" onClick={enableNotifications}>
+            Enable notifications
+          </button>
           <button type="button" className="danger-button" onClick={onLogout}>
             Logout
           </button>

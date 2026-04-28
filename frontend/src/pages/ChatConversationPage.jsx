@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { io } from "socket.io-client";
 import { useParams } from "react-router-dom";
 import ChatHeader from "../components/chat/ChatHeader";
 import MessageBubble from "../components/chat/MessageBubble";
@@ -8,17 +7,14 @@ import { useAuth } from "../context/AuthContext";
 import { useDialog } from "../context/DialogContext";
 import { useNotifications } from "../context/NotificationContext";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
-
 export default function ChatConversationPage() {
   const { friendId } = useParams();
-  const { token, user } = useAuth();
-  const { refreshNotifications } = useNotifications();
+  const { user } = useAuth();
+  const { refreshNotifications, subscribeToMessages, sendChatMessage } = useNotifications();
   const { showError } = useDialog();
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const messagesEndRef = useRef(null);
-  const socketRef = useRef(null);
 
   const friend = useMemo(
     () => (user?.friends || []).find((item) => item.id === friendId),
@@ -49,14 +45,11 @@ export default function ChatConversationPage() {
   }, [friendId, refreshNotifications, showError]);
 
   useEffect(() => {
-    if (!token || !friendId) {
+    if (!friendId) {
       return undefined;
     }
 
-    const socket = io(SERVER_URL, { auth: { token } });
-    socketRef.current = socket;
-
-    socket.on("chat:message", (message) => {
+    const unsubscribe = subscribeToMessages((message) => {
       const sender = message.senderId?._id || message.senderId;
       const receiver = message.receiverId?._id || message.receiverId;
       const related = sender === friendId || receiver === friendId;
@@ -70,11 +63,8 @@ export default function ChatConversationPage() {
       refreshNotifications().catch(() => {});
     });
 
-    return () => {
-      socket.disconnect();
-      socketRef.current = null;
-    };
-  }, [token, friendId, refreshNotifications]);
+    return unsubscribe;
+  }, [friendId, refreshNotifications, subscribeToMessages]);
 
   async function sendMessage(event) {
     event.preventDefault();
@@ -82,7 +72,7 @@ export default function ChatConversationPage() {
       return;
     }
     try {
-      socketRef.current?.emit("chat:send", { receiverId: friendId, content });
+      sendChatMessage({ receiverId: friendId, content });
       setContent("");
     } catch (err) {
       showError(err.response?.data?.message || "Could not send message.");
@@ -108,10 +98,12 @@ export default function ChatConversationPage() {
           <li ref={messagesEndRef} />
         </ul>
         <form className="row-form chat-input-row" onSubmit={sendMessage}>
-          <input
+          <textarea
+            className="chat-message-input"
             value={content}
-            placeholder="Type a message..."
+            placeholder="Type your message..."
             onChange={(event) => setContent(event.target.value)}
+            rows={3}
           />
           <button type="submit" disabled={!content.trim()}>
             Send

@@ -415,6 +415,12 @@ button:disabled {
   display: inline-flex;
 }
 
+.requester-link {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 700;
+}
+
 .friend-row.active {
   background: #edf3ff;
   border-color: #c7d9fc;
@@ -568,12 +574,24 @@ button:disabled {
   padding: 0.75rem;
   background: #fff;
   border-top: 1px solid var(--line);
+  align-items: end;
 }
 
 .single-chat-panel {
   min-height: 640px;
   height: min(75vh, 720px);
   overflow: hidden;
+}
+
+.chat-message-input {
+  min-height: 92px;
+  resize: vertical;
+}
+
+.chat-input-row button {
+  min-height: 46px;
+  min-width: 90px;
+  font-weight: 800;
 }
 
 .button-row {

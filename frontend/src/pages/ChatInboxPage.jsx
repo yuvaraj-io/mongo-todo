@@ -1,5 +1,4 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { io } from "socket.io-client";
 import { useNavigate } from "react-router-dom";
 import FriendListItem from "../components/chat/FriendListItem";
 import { getFriendIdFromMessage } from "../components/chat/chatUtils";
@@ -8,22 +7,19 @@ import { useAuth } from "../context/AuthContext";
 import { useDialog } from "../context/DialogContext";
 import { useNotifications } from "../context/NotificationContext";
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
-
 export default function ChatInboxPage() {
-  const { token, user } = useAuth();
+  const { user } = useAuth();
   const { showError } = useDialog();
-  const { unreadByUser, refreshNotifications } = useNotifications();
+  const { unreadByUser, refreshNotifications, subscribeToMessages } = useNotifications();
   const [lastByFriend, setLastByFriend] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!token || !user?.id) {
+    if (!user?.id) {
       return undefined;
     }
 
-    const socket = io(SERVER_URL, { auth: { token } });
-    socket.on("chat:message", (message) => {
+    const unsubscribe = subscribeToMessages((message) => {
       refreshNotifications().catch(() => {});
       const friendId = getFriendIdFromMessage(message, user.id);
       if (!friendId) {
@@ -31,8 +27,8 @@ export default function ChatInboxPage() {
       }
       setLastByFriend((prev) => ({ ...prev, [friendId]: message }));
     });
-    return () => socket.disconnect();
-  }, [token, user?.id, refreshNotifications]);
+    return unsubscribe;
+  }, [user?.id, refreshNotifications, subscribeToMessages]);
 
   useEffect(() => {
     async function loadLastMessages() {
