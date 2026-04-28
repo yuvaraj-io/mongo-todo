@@ -11,9 +11,12 @@
   },
   "dependencies": {
     "@vitejs/plugin-react": "^4.2.1",
-    "vite": "^5.1.4",
+    "axios": "^1.8.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.30.1",
+    "socket.io-client": "^4.8.1",
+    "vite": "^5.1.4"
   },
   "devDependencies": {}
 }
