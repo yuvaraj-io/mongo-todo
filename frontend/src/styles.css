@@ -284,6 +284,9 @@ button:disabled {
 }
 
 .todo-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
   transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
 }
 
@@ -304,13 +307,23 @@ button:disabled {
 }
 
 .todo-row span {
-  flex: 1;
+  min-width: 0;
+  grid-column: 2;
+}
+
+.todo-actions {
+  display: flex;
+  gap: 0.45rem;
+  grid-column: 1 / -1;
+  justify-content: flex-end;
+  margin-top: 0.3rem;
 }
 
 .inline-form {
   display: flex;
   gap: 0.5rem;
-  flex: 1;
+  width: 100%;
+  grid-column: 2;
 }
 
 .done {
@@ -337,6 +350,30 @@ button:disabled {
   border-radius: 12px;
   background: #fff;
   padding: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+}
+
+.status-pill {
+  border-radius: 999px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.76rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.status-pill.done {
+  color: #0d7c3f;
+  background: #e7f8ee;
+  border-color: #b9e6cb;
+}
+
+.status-pill.pending {
+  color: #91520d;
+  background: #fff4e5;
+  border-color: #f4d7ac;
 }
 
 .chat-layout {
@@ -371,6 +408,11 @@ button:disabled {
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 0.68rem;
+}
+
+.mini-avatar-link {
+  text-decoration: none;
+  display: inline-flex;
 }
 
 .friend-row.active {
@@ -439,10 +481,22 @@ button:disabled {
   display: flex;
   align-items: center;
   gap: 0.7rem;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: #fff;
 }
 
 .chat-header-user {
   font-size: 0.96rem;
+}
+
+.chat-header-user-link {
+  text-decoration: none;
+  color: inherit;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
 }
 
 .back-link {
@@ -506,6 +560,8 @@ button:disabled {
 
 .single-chat-panel {
   min-height: 640px;
+  height: min(75vh, 720px);
+  overflow: hidden;
 }
 
 .button-row {
@@ -520,6 +576,62 @@ button:disabled {
 
 .success {
   color: var(--success);
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 21, 40, 0.35);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  z-index: 100;
+}
+
+.dialog-card {
+  width: min(420px, 100%);
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 1rem;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.dialog-card h3,
+.dialog-card p {
+  margin: 0;
+}
+
+.profile-header-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.9rem;
+  align-items: center;
+  padding: 0.9rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: #f8fbff;
+}
+
+.profile-hero-avatar {
+  width: 74px;
+  height: 74px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-action-row {
+  display: flex;
+  gap: 0.55rem;
+  margin-top: 0.6rem;
+  align-items: center;
+}
+
+.profile-action-row a {
+  color: var(--primary-strong);
+  text-decoration: none;
 }
 
 .center-note {
@@ -548,7 +660,7 @@ button:disabled {
 
   .brand,
   .profile-mini,
-  .danger-button {
+  .sidebar > .danger-button {
     display: none;
   }
 
@@ -606,9 +718,33 @@ button:disabled {
 
   .single-chat-panel {
     min-height: 520px;
+    height: min(70vh, 620px);
   }
 
   .bubble {
     max-width: 88%;
+  }
+
+  .todo-actions {
+    justify-content: stretch;
+  }
+
+  .todo-actions button {
+    flex: 1;
+  }
+
+  .profile-header-card {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 0.7rem;
+  }
+
+  .profile-header-card h2 {
+    margin: 0;
+  }
+
+  .profile-header-card .muted {
+    margin-top: 0.2rem;
   }
 }

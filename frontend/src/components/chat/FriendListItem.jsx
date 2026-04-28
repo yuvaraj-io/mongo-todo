@@ -1,4 +1,5 @@
 import React from "react";
+import { Link } from "react-router-dom";
 import { formatBadgeCount, formatTime } from "./chatUtils";
 
 export default function FriendListItem({
@@ -10,10 +11,26 @@ export default function FriendListItem({
 }) {
   return (
     <button type="button" className={`friend-row ${active ? "active" : ""}`} onClick={onClick}>
-      <span className="friend-avatar">{(friend.username || "U").slice(0, 1)}</span>
+      <Link
+        to={`/users/${friend.username}`}
+        className="mini-avatar-link"
+        onClick={(event) => event.stopPropagation()}
+      >
+        {friend.profileImage ? (
+          <img src={`http://localhost:5050${friend.profileImage}`} alt={friend.username} className="avatar" />
+        ) : (
+          <span className="friend-avatar">{(friend.username || "U").slice(0, 1)}</span>
+        )}
+      </Link>
       <span className="friend-meta">
         <strong>{friend.username || friend.id}</strong>
-        <small className="friend-preview">{lastMessage?.content || "Start a conversation"}</small>
+        <small className="friend-preview">
+          {unreadCount > 0
+            ? `${formatBadgeCount(unreadCount)} pending message${
+                unreadCount > 1 ? "s" : ""
+              }`
+            : lastMessage?.content || "No pending messages"}
+        </small>
       </span>
       <span className="friend-side">
         <small className="friend-time">{formatTime(lastMessage?.createdAt)}</small>
@@ -22,4 +39,3 @@ export default function FriendListItem({
     </button>
   );
 }
-

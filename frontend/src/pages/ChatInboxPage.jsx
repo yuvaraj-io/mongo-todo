@@ -5,12 +5,14 @@ import FriendListItem from "../components/chat/FriendListItem";
 import { getFriendIdFromMessage } from "../components/chat/chatUtils";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useDialog } from "../context/DialogContext";
 import { useNotifications } from "../context/NotificationContext";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
 
 export default function ChatInboxPage() {
   const { token, user } = useAuth();
+  const { showError } = useDialog();
   const { unreadByUser, refreshNotifications } = useNotifications();
   const [lastByFriend, setLastByFriend] = useState({});
   const navigate = useNavigate();
@@ -48,16 +50,31 @@ export default function ChatInboxPage() {
       );
       setLastByFriend(Object.fromEntries(entries));
     }
-    loadLastMessages().catch(() => {});
-  }, [user?.friends]);
+    loadLastMessages().catch((err) => {
+      showError(err.response?.data?.message || "Could not load inbox previews.");
+    });
+  }, [user?.friends, showError]);
 
-  const friends = useMemo(() => user?.friends || [], [user?.friends]);
+  const friends = useMemo(() => {
+    const list = [...(user?.friends || [])];
+    list.sort((a, b) => (unreadByUser[b.id] || 0) - (unreadByUser[a.id] || 0));
+    return list;
+  }, [user?.friends, unreadByUser]);
+
+  const totalPending = useMemo(
+    () => Object.values(unreadByUser || {}).reduce((sum, count) => sum + count, 0),
+    [unreadByUser]
+  );
 
   return (
     <section className="page">
       <div className="page-header">
-        <h1>Inbox</h1>
-        <p className="muted">Friends and recent message previews.</p>
+        <h1>Pending Messages</h1>
+        <p className="muted">
+          {totalPending > 0
+            ? `${totalPending} total pending across friends`
+            : "No pending messages right now."}
+        </p>
       </div>
       <div className="chat-inbox">
         {friends.length === 0 ? (
@@ -81,4 +98,3 @@ export default function ChatInboxPage() {
     </section>
   );
 }
-

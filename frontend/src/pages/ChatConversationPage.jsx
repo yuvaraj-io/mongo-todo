@@ -5,6 +5,7 @@ import ChatHeader from "../components/chat/ChatHeader";
 import MessageBubble from "../components/chat/MessageBubble";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useDialog } from "../context/DialogContext";
 import { useNotifications } from "../context/NotificationContext";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
@@ -13,6 +14,7 @@ export default function ChatConversationPage() {
   const { friendId } = useParams();
   const { token, user } = useAuth();
   const { refreshNotifications } = useNotifications();
+  const { showError } = useDialog();
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
   const messagesEndRef = useRef(null);
@@ -33,14 +35,18 @@ export default function ChatConversationPage() {
     }
 
     async function loadConversation() {
-      await api.patch(`/messages/read/${friendId}`);
-      const { data } = await api.get(`/messages/${friendId}`);
-      setMessages(data.messages || []);
-      refreshNotifications().catch(() => {});
+      try {
+        await api.patch(`/messages/read/${friendId}`);
+        const { data } = await api.get(`/messages/${friendId}`);
+        setMessages(data.messages || []);
+        refreshNotifications().catch(() => {});
+      } catch (err) {
+        showError(err.response?.data?.message || "Could not load conversation.");
+      }
     }
 
     loadConversation().catch(() => {});
-  }, [friendId, refreshNotifications]);
+  }, [friendId, refreshNotifications, showError]);
 
   useEffect(() => {
     if (!token || !friendId) {
@@ -75,13 +81,21 @@ export default function ChatConversationPage() {
     if (!friendId || !content.trim()) {
       return;
     }
-    socketRef.current?.emit("chat:send", { receiverId: friendId, content });
-    setContent("");
+    try {
+      socketRef.current?.emit("chat:send", { receiverId: friendId, content });
+      setContent("");
+    } catch (err) {
+      showError(err.response?.data?.message || "Could not send message.");
+    }
   }
 
   return (
     <section className="page">
-      <ChatHeader title={friend?.username || "Conversation"} />
+      <ChatHeader
+        title={friend?.username || "Conversation"}
+        username={friend?.username}
+        profileImage={friend?.profileImage}
+      />
       <div className="chat-panel single-chat-panel">
         <ul className="messages chat-messages">
           {messages.map((message) => (
@@ -107,4 +121,3 @@ export default function ChatConversationPage() {
     </section>
   );
 }
-

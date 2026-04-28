@@ -2,14 +2,15 @@ import React from "react";
 import { useEffect, useState } from "react";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useDialog } from "../context/DialogContext";
 
 export default function TodosPage() {
   const { user } = useAuth();
+  const { showError } = useDialog();
   const [todos, setTodos] = useState([]);
   const [title, setTitle] = useState("");
   const [sharedUsername, setSharedUsername] = useState("");
   const [sharedTodos, setSharedTodos] = useState([]);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     loadMyTodos();
@@ -23,40 +24,56 @@ export default function TodosPage() {
   async function createTodo(event) {
     event.preventDefault();
     try {
-      setError("");
       const { data } = await api.post("/todos", { title });
       setTodos((prev) => [data.todo, ...prev]);
       setTitle("");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create todo.");
+      showError(err.response?.data?.message || "Failed to create todo.");
     }
   }
 
   async function toggleTodo(todo) {
-    const { data } = await api.patch(`/todos/item/${todo._id}`, {
-      completed: !todo.completed
-    });
-    setTodos((prev) => prev.map((item) => (item._id === todo._id ? data.todo : item)));
+    try {
+      const { data } = await api.patch(`/todos/item/${todo._id}`, {
+        completed: !todo.completed
+      });
+      setTodos((prev) => prev.map((item) => (item._id === todo._id ? data.todo : item)));
+    } catch (err) {
+      showError(err.response?.data?.message || "Failed to update todo.");
+    }
   }
 
   async function updateTitle(todo, nextTitle) {
-    const { data } = await api.patch(`/todos/item/${todo._id}`, { title: nextTitle });
-    setTodos((prev) => prev.map((item) => (item._id === todo._id ? data.todo : item)));
+    try {
+      const { data } = await api.patch(`/todos/item/${todo._id}`, { title: nextTitle });
+      setTodos((prev) => prev.map((item) => (item._id === todo._id ? data.todo : item)));
+    } catch (err) {
+      showError(err.response?.data?.message || "Failed to rename todo.");
+    }
   }
 
   async function removeTodo(id) {
-    await api.delete(`/todos/item/${id}`);
-    setTodos((prev) => prev.filter((todo) => todo._id !== id));
+    try {
+      await api.delete(`/todos/item/${id}`);
+      setTodos((prev) => prev.filter((todo) => todo._id !== id));
+      await loadMyTodos();
+    } catch (err) {
+      if (err.response?.status === 404) {
+        setTodos((prev) => prev.filter((todo) => todo._id !== id));
+        await loadMyTodos();
+        return;
+      }
+      showError(err.response?.data?.message || "Failed to delete todo.");
+    }
   }
 
   async function viewSharedTodos(event) {
     event.preventDefault();
     try {
-      setError("");
       const { data } = await api.get(`/todos/${sharedUsername.trim()}`);
       setSharedTodos(data.todos);
     } catch (err) {
-      setError(err.response?.data?.message || "Cannot load shared todos.");
+      showError(err.response?.data?.message || "Cannot load shared todos.");
       setSharedTodos([]);
     }
   }
@@ -75,7 +92,6 @@ export default function TodosPage() {
         />
         <button type="submit">Add Todo</button>
       </form>
-      {error && <p className="error">{error}</p>}
       {todos.length === 0 ? (
         <div className="empty-card">
           <h3>No tasks yet</h3>
@@ -108,7 +124,10 @@ export default function TodosPage() {
         <ul className="list">
           {sharedTodos.map((todo) => (
             <li key={todo._id} className="shared-item">
-              {todo.title}
+              <span>{todo.title}</span>
+              <span className={`status-pill ${todo.completed ? "done" : "pending"}`}>
+                {todo.completed ? "Done" : "Pending"}
+              </span>
             </li>
           ))}
         </ul>
@@ -138,12 +157,14 @@ function TodoRow({ todo, onToggle, onDelete, onUpdate }) {
       ) : (
         <span className={todo.completed ? "done" : ""}>{todo.title}</span>
       )}
-      <button type="button" onClick={() => setEditing((prev) => !prev)}>
-        Edit
-      </button>
-      <button type="button" className="danger-button" onClick={onDelete}>
-        Delete
-      </button>
+      <div className="todo-actions">
+        <button type="button" onClick={() => setEditing((prev) => !prev)}>
+          Edit
+        </button>
+        <button type="button" className="danger-button" onClick={onDelete}>
+          Delete
+        </button>
+      </div>
     </li>
   );
 }

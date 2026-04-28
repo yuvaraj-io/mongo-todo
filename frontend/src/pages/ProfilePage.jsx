@@ -1,10 +1,14 @@
 import React from "react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useDialog } from "../context/DialogContext";
 
 export default function ProfilePage() {
-  const { user, setUser } = useAuth();
+  const { user, setUser, logout } = useAuth();
+  const { showError } = useDialog();
+  const navigate = useNavigate();
   const [form, setForm] = useState({
     username: user?.username || "",
     email: user?.email || "",
@@ -13,12 +17,10 @@ export default function ProfilePage() {
   });
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
-  const [error, setError] = useState("");
 
   async function onSubmit(event) {
     event.preventDefault();
     try {
-      setError("");
       const data = new FormData();
       data.append("username", form.username);
       data.append("email", form.email);
@@ -34,13 +36,33 @@ export default function ProfilePage() {
       setMessage("Profile updated.");
       setForm((prev) => ({ ...prev, password: "" }));
     } catch (err) {
-      setError(err.response?.data?.message || "Profile update failed.");
+      showError(err.response?.data?.message || "Profile update failed.");
     }
+  }
+
+  function onLogout() {
+    logout();
+    navigate("/login");
   }
 
   return (
     <section className="page">
-      <h1>Profile</h1>
+      <div className="page-header">
+        <h1>Profile</h1>
+        <p className="muted">Manage your identity and account settings.</p>
+      </div>
+      <div className="profile-header-card">
+        {user?.profileImage ? (
+          <img src={`http://localhost:5050${user.profileImage}`} alt={user.username} className="profile-hero-avatar" />
+        ) : (
+          <div className="profile-hero-avatar avatar-fallback">{(user?.username || "U").slice(0, 1)}</div>
+        )}
+        <div>
+          <h2>@{user?.username}</h2>
+          <p className="muted">{user?.email}</p>
+          <p className="muted">{user?.bio || "No bio yet."}</p>
+        </div>
+      </div>
       <form className="stack-form" onSubmit={onSubmit}>
         <input
           placeholder="Username"
@@ -65,10 +87,13 @@ export default function ProfilePage() {
         />
         <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} />
         {message && <p className="success">{message}</p>}
-        {error && <p className="error">{error}</p>}
-        <button type="submit">Update profile</button>
+        <div className="profile-action-row">
+          <button type="submit">Update profile</button>
+          <button type="button" className="danger-button" onClick={onLogout}>
+            Logout
+          </button>
+        </div>
       </form>
     </section>
   );
 }
-
