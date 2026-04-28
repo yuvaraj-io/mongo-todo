@@ -3,6 +3,16 @@ import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useNotifications } from "../context/NotificationContext";
 
+function formatBadgeCount(value) {
+  if (!value || value <= 0) {
+    return "";
+  }
+  if (value > 99) {
+    return "99+";
+  }
+  return String(value);
+}
+
 export default function Sidebar() {
   const { user, logout } = useAuth();
   const { requestCount, totalUnreadMessages } = useNotifications();
@@ -39,11 +49,15 @@ export default function Sidebar() {
         </NavLink>
         <NavLink to="/requests" className="with-badge">
           <span className="nav-item">🔔<small>Alerts</small></span>
-          {requestCount > 0 ? <span className="badge-dot" /> : null}
+          {requestCount > 0 ? (
+            <span className="badge badge-alert">{formatBadgeCount(requestCount)}</span>
+          ) : null}
         </NavLink>
         <NavLink to="/chat" className="with-badge">
           <span className="nav-item">💬<small>Chat</small></span>
-          {totalUnreadMessages > 0 ? <span className="badge-dot" /> : null}
+          {totalUnreadMessages > 0 ? (
+            <span className="badge badge-chat">{formatBadgeCount(totalUnreadMessages)}</span>
+          ) : null}
         </NavLink>
         <NavLink to="/profile">
           <span className="nav-item">👤<small>Profile</small></span>

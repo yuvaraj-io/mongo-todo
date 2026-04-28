@@ -63,39 +63,56 @@ export default function TodosPage() {
 
   return (
     <section className="page">
-      <h1>Todos</h1>
-      <p className="muted">Signed in as {user?.username}</p>
-      <form className="row-form" onSubmit={createTodo}>
-        <input value={title} placeholder="Add todo" onChange={(e) => setTitle(e.target.value)} />
-        <button type="submit">Create</button>
+      <div className="page-header">
+        <h1>My Focus Board</h1>
+        <p className="muted">Welcome back, {user?.username}</p>
+      </div>
+      <form className="row-form add-todo-form" onSubmit={createTodo}>
+        <input
+          value={title}
+          placeholder="Add a high-impact task"
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <button type="submit">Add Todo</button>
       </form>
       {error && <p className="error">{error}</p>}
-      <ul className="list">
-        {todos.map((todo) => (
-          <TodoRow
-            key={todo._id}
-            todo={todo}
-            onToggle={() => toggleTodo(todo)}
-            onDelete={() => removeTodo(todo._id)}
-            onUpdate={updateTitle}
-          />
-        ))}
-      </ul>
+      {todos.length === 0 ? (
+        <div className="empty-card">
+          <h3>No tasks yet</h3>
+          <p>Start with one small task and keep your momentum rolling.</p>
+        </div>
+      ) : (
+        <ul className="list">
+          {todos.map((todo) => (
+            <TodoRow
+              key={todo._id}
+              todo={todo}
+              onToggle={() => toggleTodo(todo)}
+              onDelete={() => removeTodo(todo._id)}
+              onUpdate={updateTitle}
+            />
+          ))}
+        </ul>
+      )}
 
-      <h2>View Friend Todos</h2>
-      <form className="row-form" onSubmit={viewSharedTodos}>
-        <input
-          value={sharedUsername}
-          placeholder="Friend username"
-          onChange={(e) => setSharedUsername(e.target.value)}
-        />
-        <button type="submit">Load</button>
-      </form>
-      <ul className="list">
-        {sharedTodos.map((todo) => (
-          <li key={todo._id}>{todo.title}</li>
-        ))}
-      </ul>
+      <div className="shared-card">
+        <h2>Friend Shared Todos</h2>
+        <form className="row-form" onSubmit={viewSharedTodos}>
+          <input
+            value={sharedUsername}
+            placeholder="Friend username"
+            onChange={(e) => setSharedUsername(e.target.value)}
+          />
+          <button type="submit">View</button>
+        </form>
+        <ul className="list">
+          {sharedTodos.map((todo) => (
+            <li key={todo._id} className="shared-item">
+              {todo.title}
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }
@@ -111,8 +128,8 @@ function TodoRow({ todo, onToggle, onDelete, onUpdate }) {
   }
 
   return (
-    <li className="todo-row">
-      <input type="checkbox" checked={todo.completed} onChange={onToggle} />
+    <li className={`todo-row ${todo.completed ? "completed" : ""}`}>
+      <input className="todo-checkbox" type="checkbox" checked={todo.completed} onChange={onToggle} />
       {editing ? (
         <form onSubmit={onSubmit} className="inline-form">
           <input value={value} onChange={(e) => setValue(e.target.value)} />
@@ -124,10 +141,9 @@ function TodoRow({ todo, onToggle, onDelete, onUpdate }) {
       <button type="button" onClick={() => setEditing((prev) => !prev)}>
         Edit
       </button>
-      <button type="button" onClick={onDelete}>
+      <button type="button" className="danger-button" onClick={onDelete}>
         Delete
       </button>
     </li>
   );
 }
-
