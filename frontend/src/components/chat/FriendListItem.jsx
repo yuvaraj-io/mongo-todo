@@ -25,11 +25,7 @@ export default function FriendListItem({
       <span className="friend-meta">
         <strong>{friend.username || friend.id}</strong>
         <small className="friend-preview">
-          {unreadCount > 0
-            ? `${formatBadgeCount(unreadCount)} pending message${
-                unreadCount > 1 ? "s" : ""
-              }`
-            : lastMessage?.content || "No pending messages"}
+          {lastMessage?.content || "No messages yet"}
         </small>
       </span>
       <span className="friend-side">
