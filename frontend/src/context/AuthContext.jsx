@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { api, setAuthToken } from "../api/client";
 
 const AuthContext = createContext(null);
@@ -10,6 +10,12 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => localStorage.getItem(STORAGE_KEY) || "");
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const refreshMe = useCallback(async () => {
+    const { data } = await api.get("/auth/me");
+    setUser(data.user);
+    return data.user;
+  }, []);
 
   useEffect(() => {
     if (token) {
@@ -22,44 +28,41 @@ export function AuthProvider({ children }) {
       setUser(null);
       setLoading(false);
     }
-  }, [token]);
+  }, [token, refreshMe]);
 
-  async function refreshMe() {
-    const { data } = await api.get("/auth/me");
-    setUser(data.user);
-    return data.user;
-  }
-
-  async function login(payload) {
+  const login = useCallback(async (payload) => {
     const { data } = await api.post("/auth/login", payload);
     setToken(data.token);
     setUser(data.user);
-  }
+  }, []);
 
-  async function register(payload) {
+  const register = useCallback(async (payload) => {
     const { data } = await api.post("/auth/register", payload);
     setToken(data.token);
     setUser(data.user);
-  }
+  }, []);
 
-  function logout() {
+  const logout = useCallback(() => {
     setToken("");
     setUser(null);
-  }
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      token,
+      user,
+      loading,
+      setUser,
+      login,
+      register,
+      logout,
+      refreshMe
+    }),
+    [token, user, loading, login, register, logout, refreshMe]
+  );
 
   return (
-    <AuthContext.Provider
-      value={{
-        token,
-        user,
-        loading,
-        setUser,
-        login,
-        register,
-        logout,
-        refreshMe
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
@@ -72,4 +75,3 @@ export function useAuth() {
   }
   return context;
 }
-

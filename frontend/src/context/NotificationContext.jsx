@@ -20,6 +20,9 @@ export function NotificationProvider({ children }) {
   const socketRef = useRef(null);
   const messageListenersRef = useRef(new Set());
   const userRef = useRef(user);
+  const inFlightRef = useRef(null);
+  const lastRunRef = useRef(0);
+  const minGapMs = 3000;
 
   useEffect(() => {
     userRef.current = user;
@@ -33,14 +36,26 @@ export function NotificationProvider({ children }) {
       return;
     }
 
-    const [meResponse, unreadResponse] = await Promise.all([
-      api.get("/auth/me"),
-      api.get("/messages/unread-summary")
-    ]);
+    const now = Date.now();
+    if (inFlightRef.current) {
+      return inFlightRef.current;
+    }
+    if (now - lastRunRef.current < minGapMs) {
+      return;
+    }
 
-    setRequestCount((meResponse.data.user?.receivedRequests || []).length);
-    setUnreadByUser(unreadResponse.data.byUser || {});
-    setTotalUnreadMessages(unreadResponse.data.total || 0);
+    inFlightRef.current = Promise.all([api.get("/auth/me"), api.get("/messages/unread-summary")])
+      .then(([meResponse, unreadResponse]) => {
+        setRequestCount((meResponse.data.user?.receivedRequests || []).length);
+        setUnreadByUser(unreadResponse.data.byUser || {});
+        setTotalUnreadMessages(unreadResponse.data.total || 0);
+        lastRunRef.current = Date.now();
+      })
+      .finally(() => {
+        inFlightRef.current = null;
+      });
+
+    return inFlightRef.current;
   }, [token]);
 
   useEffect(() => {

@@ -10,7 +10,7 @@ import { useNotifications } from "../context/NotificationContext";
 export default function ChatInboxPage() {
   const { user } = useAuth();
   const { showError } = useDialog();
-  const { unreadByUser, refreshNotifications, subscribeToMessages } = useNotifications();
+  const { unreadByUser, subscribeToMessages } = useNotifications();
   const [lastByFriend, setLastByFriend] = useState({});
   const navigate = useNavigate();
 
@@ -20,7 +20,6 @@ export default function ChatInboxPage() {
     }
 
     const unsubscribe = subscribeToMessages((message) => {
-      refreshNotifications().catch(() => {});
       const friendId = getFriendIdFromMessage(message, user.id);
       if (!friendId) {
         return;
@@ -28,7 +27,7 @@ export default function ChatInboxPage() {
       setLastByFriend((prev) => ({ ...prev, [friendId]: message }));
     });
     return unsubscribe;
-  }, [user?.id, refreshNotifications, subscribeToMessages]);
+  }, [user?.id, subscribeToMessages]);
 
   useEffect(() => {
     async function loadLastMessages() {

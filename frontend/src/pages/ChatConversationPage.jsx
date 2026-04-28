@@ -60,7 +60,6 @@ export default function ChatConversationPage() {
       if (sender === friendId) {
         api.patch(`/messages/read/${friendId}`).catch(() => {});
       }
-      refreshNotifications().catch(() => {});
     });
 
     return unsubscribe;
