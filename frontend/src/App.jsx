@@ -4,7 +4,8 @@ import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import { NotificationProvider } from "./context/NotificationContext";
-import ChatPage from "./pages/ChatPage";
+import ChatConversationPage from "./pages/ChatConversationPage";
+import ChatInboxPage from "./pages/ChatInboxPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
 import RegisterPage from "./pages/RegisterPage";
@@ -64,7 +65,15 @@ export default function App() {
               path="/chat"
               element={
                 <ProtectedPage>
-                  <ChatPage />
+                  <ChatInboxPage />
+                </ProtectedPage>
+              }
+            />
+            <Route
+              path="/chat/:friendId"
+              element={
+                <ProtectedPage>
+                  <ChatConversationPage />
                 </ProtectedPage>
               }
             />

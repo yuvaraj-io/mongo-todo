@@ -346,6 +346,11 @@ button:disabled {
   min-height: 580px;
 }
 
+.chat-inbox {
+  display: grid;
+  gap: 0.55rem;
+}
+
 .chat-friends {
   display: grid;
   gap: 0.5rem;
@@ -398,6 +403,25 @@ button:disabled {
   font-size: 0.78rem;
 }
 
+.friend-preview {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+.friend-side {
+  display: grid;
+  justify-items: end;
+  gap: 0.35rem;
+}
+
+.friend-time {
+  color: var(--muted);
+  font-size: 0.74rem;
+}
+
 .chat-panel {
   border: 1px solid var(--line);
   border-radius: 16px;
@@ -411,6 +435,20 @@ button:disabled {
 .chat-header {
   padding: 0.75rem 0.9rem;
   border-bottom: 1px solid var(--line);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.chat-header-user {
+  font-size: 0.96rem;
+}
+
+.back-link {
+  text-decoration: none;
+  color: var(--primary-strong);
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
@@ -464,6 +502,10 @@ button:disabled {
   padding: 0.75rem;
   background: #fff;
   border-top: 1px solid var(--line);
+}
+
+.single-chat-panel {
+  min-height: 640px;
 }
 
 .button-row {
@@ -554,12 +596,19 @@ button:disabled {
     min-height: auto;
   }
 
+  .chat-inbox {
+    gap: 0.5rem;
+  }
+
   .chat-panel {
     min-height: 460px;
+  }
+
+  .single-chat-panel {
+    min-height: 520px;
   }
 
   .bubble {
     max-width: 88%;
   }
 }
-

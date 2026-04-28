@@ -1,0 +1,84 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { io } from "socket.io-client";
+import { useNavigate } from "react-router-dom";
+import FriendListItem from "../components/chat/FriendListItem";
+import { getFriendIdFromMessage } from "../components/chat/chatUtils";
+import { api } from "../api/client";
+import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
+
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
+
+export default function ChatInboxPage() {
+  const { token, user } = useAuth();
+  const { unreadByUser, refreshNotifications } = useNotifications();
+  const [lastByFriend, setLastByFriend] = useState({});
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!token || !user?.id) {
+      return undefined;
+    }
+
+    const socket = io(SERVER_URL, { auth: { token } });
+    socket.on("chat:message", (message) => {
+      refreshNotifications().catch(() => {});
+      const friendId = getFriendIdFromMessage(message, user.id);
+      if (!friendId) {
+        return;
+      }
+      setLastByFriend((prev) => ({ ...prev, [friendId]: message }));
+    });
+    return () => socket.disconnect();
+  }, [token, user?.id, refreshNotifications]);
+
+  useEffect(() => {
+    async function loadLastMessages() {
+      const friends = user?.friends || [];
+      const entries = await Promise.all(
+        friends.map(async (friend) => {
+          try {
+            const { data } = await api.get(`/messages/${friend.id}`);
+            const messages = data.messages || [];
+            return [friend.id, messages[messages.length - 1] || null];
+          } catch (_error) {
+            return [friend.id, null];
+          }
+        })
+      );
+      setLastByFriend(Object.fromEntries(entries));
+    }
+    loadLastMessages().catch(() => {});
+  }, [user?.friends]);
+
+  const friends = useMemo(() => user?.friends || [], [user?.friends]);
+
+  return (
+    <section className="page">
+      <div className="page-header">
+        <h1>Inbox</h1>
+        <p className="muted">Friends and recent message previews.</p>
+      </div>
+      <div className="chat-inbox">
+        {friends.length === 0 ? (
+          <div className="empty-card">
+            <h3>No friends yet</h3>
+            <p>Accept friend requests first, then your inbox appears here.</p>
+          </div>
+        ) : (
+          friends.map((friend) => (
+            <FriendListItem
+              key={friend.id}
+              friend={friend}
+              unreadCount={unreadByUser[friend.id] || 0}
+              lastMessage={lastByFriend[friend.id]}
+              active={false}
+              onClick={() => navigate(`/chat/${friend.id}`)}
+            />
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
