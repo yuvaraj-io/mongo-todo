@@ -1,10 +1,11 @@
 import React from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-
+import { useNotifications } from "../context/NotificationContext";
 
 export default function Sidebar() {
   const { user, logout } = useAuth();
+  const { requestCount, totalUnreadMessages } = useNotifications();
   const navigate = useNavigate();
 
   function onLogout() {
@@ -30,11 +31,23 @@ export default function Sidebar() {
       </div>
 
       <nav className="nav-links">
-        <NavLink to="/todos">Todos</NavLink>
-        <NavLink to="/profile">Profile</NavLink>
-        <NavLink to="/search">Search</NavLink>
-        <NavLink to="/requests">Requests</NavLink>
-        <NavLink to="/chat">Chat</NavLink>
+        <NavLink to="/todos">
+          <span className="nav-item">🏠<small>Home</small></span>
+        </NavLink>
+        <NavLink to="/search">
+          <span className="nav-item">🔎<small>Search</small></span>
+        </NavLink>
+        <NavLink to="/requests" className="with-badge">
+          <span className="nav-item">🔔<small>Alerts</small></span>
+          {requestCount > 0 ? <span className="badge-dot" /> : null}
+        </NavLink>
+        <NavLink to="/chat" className="with-badge">
+          <span className="nav-item">💬<small>Chat</small></span>
+          {totalUnreadMessages > 0 ? <span className="badge-dot" /> : null}
+        </NavLink>
+        <NavLink to="/profile">
+          <span className="nav-item">👤<small>Profile</small></span>
+        </NavLink>
       </nav>
 
       <button className="danger-button" type="button" onClick={onLogout}>
@@ -43,4 +56,3 @@ export default function Sidebar() {
     </aside>
   );
 }
-

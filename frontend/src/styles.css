@@ -146,11 +146,38 @@ button:hover {
   padding: 0.5rem 0.7rem;
   border-radius: 9px;
   border: 1px solid transparent;
+  position: relative;
 }
 
 .nav-links a.active {
   border-color: var(--line);
   background: #fdf4e7;
+}
+
+.nav-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.nav-item small {
+  font-size: 0.88rem;
+}
+
+.with-badge {
+  position: relative;
+}
+
+.badge-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #21b14b;
+  border: 2px solid #fff;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .main-content {
@@ -234,6 +261,13 @@ button:hover {
   border-color: var(--primary);
 }
 
+.chat-friends button {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+}
+
 .chat-panel {
   border: 1px solid var(--line);
   border-radius: 12px;
@@ -277,12 +311,59 @@ button:hover {
   }
 
   .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 20;
     border-right: 0;
-    border-bottom: 1px solid var(--line);
+    border-bottom: 0;
+    border-top: 1px solid var(--line);
+    background: rgba(255, 250, 244, 0.98);
+    padding: 0.45rem 0.4rem calc(0.45rem + env(safe-area-inset-bottom));
+    display: block;
+  }
+
+  .brand,
+  .profile-mini,
+  .danger-button {
+    display: none;
+  }
+
+  .nav-links {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.2rem;
+  }
+
+  .nav-links a {
+    border-radius: 12px;
+    text-align: center;
+    padding: 0.45rem 0.2rem;
+    border: 1px solid transparent;
+  }
+
+  .nav-item {
+    display: grid;
+    justify-items: center;
+    gap: 0.16rem;
+  }
+
+  .nav-item small {
+    font-size: 0.68rem;
+  }
+
+  .badge-dot {
+    top: 5px;
+    right: 14px;
+  }
+
+  .main-content {
+    padding: 0.8rem;
+    padding-bottom: calc(86px + env(safe-area-inset-bottom));
   }
 
   .chat-layout {
     grid-template-columns: 1fr;
   }
 }
-

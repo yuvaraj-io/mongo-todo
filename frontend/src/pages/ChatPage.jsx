@@ -3,11 +3,13 @@ import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useNotifications } from "../context/NotificationContext";
 
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
 
 export default function ChatPage() {
   const { token, user } = useAuth();
+  const { unreadByUser, refreshNotifications } = useNotifications();
   const [selectedFriend, setSelectedFriend] = useState("");
   const [messages, setMessages] = useState([]);
   const [content, setContent] = useState("");
@@ -29,6 +31,7 @@ export default function ChatPage() {
     socketRef.current = socket;
 
     socket.on("chat:message", (message) => {
+      refreshNotifications().catch(() => {});
       const friendId = selectedFriendRef.current;
       const related =
         message.senderId === friendId ||
@@ -45,12 +48,14 @@ export default function ChatPage() {
       socket.disconnect();
       socketRef.current = null;
     };
-  }, [token]);
+  }, [token, refreshNotifications]);
 
   async function loadHistory(friendId) {
     setSelectedFriend(friendId);
+    await api.patch(`/messages/read/${friendId}`);
     const { data } = await api.get(`/messages/${friendId}`);
     setMessages(data.messages);
+    refreshNotifications().catch(() => {});
   }
 
   async function sendMessage(event) {
@@ -75,7 +80,8 @@ export default function ChatPage() {
               className={selectedFriend === friend.id ? "active" : ""}
               onClick={() => loadHistory(friend.id)}
             >
-              {friend.username || friend.id}
+              <span>{friend.username || friend.id}</span>
+              {(unreadByUser[friend.id] || 0) > 0 ? <span className="badge-dot" /> : null}
             </button>
           ))}
         </aside>

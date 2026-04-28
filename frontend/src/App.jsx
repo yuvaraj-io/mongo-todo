@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import { NotificationProvider } from "./context/NotificationContext";
 import ChatPage from "./pages/ChatPage";
 import LoginPage from "./pages/LoginPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -22,54 +23,55 @@ function ProtectedPage({ children }) {
 export default function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route
-            path="/todos"
-            element={
-              <ProtectedPage>
-                <TodosPage />
-              </ProtectedPage>
-            }
-          />
-          <Route
-            path="/profile"
-            element={
-              <ProtectedPage>
-                <ProfilePage />
-              </ProtectedPage>
-            }
-          />
-          <Route
-            path="/search"
-            element={
-              <ProtectedPage>
-                <SearchPage />
-              </ProtectedPage>
-            }
-          />
-          <Route
-            path="/requests"
-            element={
-              <ProtectedPage>
-                <RequestsPage />
-              </ProtectedPage>
-            }
-          />
-          <Route
-            path="/chat"
-            element={
-              <ProtectedPage>
-                <ChatPage />
-              </ProtectedPage>
-            }
-          />
-          <Route path="/" element={<Navigate to="/todos" replace />} />
-        </Routes>
-      </BrowserRouter>
+      <NotificationProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route
+              path="/todos"
+              element={
+                <ProtectedPage>
+                  <TodosPage />
+                </ProtectedPage>
+              }
+            />
+            <Route
+              path="/profile"
+              element={
+                <ProtectedPage>
+                  <ProfilePage />
+                </ProtectedPage>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <ProtectedPage>
+                  <SearchPage />
+                </ProtectedPage>
+              }
+            />
+            <Route
+              path="/requests"
+              element={
+                <ProtectedPage>
+                  <RequestsPage />
+                </ProtectedPage>
+              }
+            />
+            <Route
+              path="/chat"
+              element={
+                <ProtectedPage>
+                  <ChatPage />
+                </ProtectedPage>
+              }
+            />
+            <Route path="/" element={<Navigate to="/todos" replace />} />
+          </Routes>
+        </BrowserRouter>
+      </NotificationProvider>
     </AuthProvider>
   );
 }
-
