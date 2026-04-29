@@ -99,7 +99,7 @@ export function NotificationProvider({ children }) {
       return undefined;
     }
 
-    const socket = io(SERVER_URL, { auth: { token } });
+    const socket = io(SERVER_URL || "/", { auth: { token } });
     socketRef.current = socket;
 
     socket.on("chat:message", (message) => {
