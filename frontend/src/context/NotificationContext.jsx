@@ -4,7 +4,7 @@ import { api } from "../api/client";
 import { useAuth } from "./AuthContext";
 
 const NotificationContext = createContext(null);
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || "http://localhost:5050";
+const SERVER_URL = import.meta.env.VITE_SERVER_URL || "";
 
 export function NotificationProvider({ children }) {
   const { token, user } = useAuth();
